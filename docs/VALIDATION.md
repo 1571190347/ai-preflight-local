@@ -19,6 +19,12 @@
 
 本次已实际取得 Cloudflare trace、ipwho.is、IANA RDAP 引导表、公开测试 IP 的 ipapi.is/ipwho.is 归属信息、example.com RDAP、OpenAI News RSS 和 OpenAI 服务状态响应。状态响应包含需注意状态，不应描述为所有服务正常。此记录只证明测试时收到相应响应，不代表未来可用性，也不代表完整安全字段或所有数据源已验证。
 
+## 公开发行包安装验证
+
+v0.3.0 发布后，[公开安装工作流](https://github.com/1571190347/ai-preflight-local/actions/runs/34313530579) 的 macOS、Ubuntu 和 Windows 三个任务全部通过。实际从 GitHub 下载发行包，验证 SHA256，在没有可用 Node 的路径下安装私有 Node.js，再检查页面与健康接口、更新保留配置、状态和停止。Windows 使用真实 Windows PowerShell 5.1。
+
+本机另外在空目录运行 README 中的公开安装命令；不安装 `node_modules`，启动、健康接口、页面和停止均通过。测试时设置 `PREFLIGHT_NO_OPEN=1`，没有验证系统自动打开浏览器的行为。
+
 ## 复现
 
 ```sh

@@ -160,6 +160,11 @@ async function windowsFixture(t) {
   delete env.PREFLIGHT_VERSION;
   delete env.PREFLIGHT_REPOSITORY;
   delete env.NODE_OPTIONS;
+  // CI launches Node from PowerShell 7. Let Windows PowerShell 5.1 initialize
+  // its own module paths instead of trying to load incompatible PS7 modules.
+  for (const key of Object.keys(env)) {
+    if (key.toLowerCase() === "psmodulepath") delete env[key];
+  }
   return { ...value, harness, root, env, launchLog };
 }
 function runWindows(value, extraEnv = {}) {

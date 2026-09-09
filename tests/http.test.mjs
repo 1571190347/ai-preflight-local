@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { createServer } from 'node:net';
 import { request } from 'node:http';
 test('local HTTP service serves assets and rejects cross-site / malformed requests without outbound calls', async (t) => {
@@ -32,7 +33,7 @@ test('local HTTP service serves assets and rejects cross-site / malformed reques
   };
   const child = spawn(
     process.execPath,
-    ['--import', preload, 'server/index.mjs'],
+    ['--import', pathToFileURL(preload).href, 'server/index.mjs'],
     { env, stdio: ['ignore', 'pipe', 'pipe'] },
   );
   let logs = '';
