@@ -1,0 +1,10 @@
+{
+  "name": "local-preflight-dns-collector",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Self-hosted authoritative DNS resolver observation collector",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "scripts": { "start": "node src/server.mjs", "test": "node --test test/*.test.mjs" }
+}

@@ -1,0 +1,311 @@
+{
+  "exitSources": [
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "url": "https://www.cloudflare.com/cdn-cgi/trace",
+      "format": "trace",
+      "note": "到 Cloudflare 的 HTTP 出口"
+    },
+    {
+      "id": "ipv4",
+      "name": "IPv4 · ipify",
+      "url": "https://api.ipify.org?format=json",
+      "format": "ipify",
+      "note": "仅 IPv4"
+    },
+    {
+      "id": "ipv6",
+      "name": "IPv6 · ipify",
+      "url": "https://api6.ipify.org?format=json",
+      "format": "ipify",
+      "note": "仅 IPv6；失败不代表泄露"
+    },
+    {
+      "id": "claude",
+      "name": "Claude 边缘入口",
+      "url": "https://claude.ai/cdn-cgi/trace",
+      "format": "trace",
+      "note": "入口 trace；不等于应用内部风控"
+    },
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT 边缘入口",
+      "url": "https://chatgpt.com/cdn-cgi/trace",
+      "format": "trace",
+      "note": "入口 trace；可能不允许跨站读取"
+    }
+  ],
+  "connectionSources": [
+    {
+      "id": "claude",
+      "name": "Claude",
+      "url": "https://claude.ai/favicon.ico"
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "url": "https://www.anthropic.com/favicon.ico"
+    },
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT",
+      "url": "https://chatgpt.com/favicon.ico"
+    },
+    {
+      "id": "openai-api",
+      "name": "OpenAI API",
+      "url": "https://api.openai.com/v1/models"
+    },
+    {
+      "id": "google",
+      "name": "Google",
+      "url": "https://www.google.com/favicon.ico"
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "url": "https://www.youtube.com/favicon.ico"
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "url": "https://github.com/favicon.ico"
+    },
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "url": "https://www.cloudflare.com/favicon.ico"
+    },
+    {
+      "id": "wikipedia",
+      "name": "Wikipedia",
+      "url": "https://www.wikipedia.org/favicon.ico"
+    },
+    {
+      "id": "bing",
+      "name": "Bing",
+      "url": "https://www.bing.com/favicon.ico"
+    },
+    {
+      "id": "baidu",
+      "name": "百度",
+      "url": "https://www.baidu.com/favicon.ico"
+    },
+    {
+      "id": "bilibili",
+      "name": "哔哩哔哩",
+      "url": "https://www.bilibili.com/favicon.ico"
+    },
+    {
+      "id": "qq",
+      "name": "腾讯",
+      "url": "https://www.qq.com/favicon.ico"
+    },
+    {
+      "id": "taobao",
+      "name": "淘宝",
+      "url": "https://www.taobao.com/favicon.ico"
+    }
+  ],
+  "statusSources": [
+    {
+      "id": "claude",
+      "name": "Claude",
+      "category": "AI",
+      "url": "https://status.claude.com"
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI / ChatGPT",
+      "category": "AI",
+      "url": "https://status.openai.com"
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "category": "AI",
+      "url": "https://status.cursor.com"
+    },
+    {
+      "id": "elevenlabs",
+      "name": "ElevenLabs",
+      "category": "AI",
+      "url": "https://status.elevenlabs.io"
+    },
+    {
+      "id": "xai",
+      "name": "xAI",
+      "category": "AI",
+      "url": "https://status.x.ai"
+    },
+    {
+      "id": "groq",
+      "name": "Groq",
+      "category": "AI",
+      "url": "https://groqstatus.com"
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "category": "AI",
+      "url": "https://status.perplexity.ai"
+    },
+    {
+      "id": "replicate",
+      "name": "Replicate",
+      "category": "AI",
+      "url": "https://status.replicate.com"
+    },
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "category": "云服务",
+      "url": "https://www.cloudflarestatus.com"
+    },
+    {
+      "id": "digitalocean",
+      "name": "DigitalOcean",
+      "category": "云服务",
+      "url": "https://status.digitalocean.com"
+    },
+    {
+      "id": "fly",
+      "name": "Fly.io",
+      "category": "云服务",
+      "url": "https://status.flyio.net"
+    },
+    {
+      "id": "netlify",
+      "name": "Netlify",
+      "category": "云服务",
+      "url": "https://www.netlifystatus.com"
+    },
+    {
+      "id": "vercel",
+      "name": "Vercel",
+      "category": "云服务",
+      "url": "https://www.vercel-status.com"
+    },
+    {
+      "id": "supabase",
+      "name": "Supabase",
+      "category": "云服务",
+      "url": "https://status.supabase.com"
+    },
+    {
+      "id": "atlassian",
+      "name": "Jira",
+      "category": "开发",
+      "url": "https://jira-software.status.atlassian.com"
+    },
+    {
+      "id": "clerk",
+      "name": "Clerk",
+      "category": "开发",
+      "url": "https://status.clerk.com"
+    },
+    {
+      "id": "figma",
+      "name": "Figma",
+      "category": "开发",
+      "url": "https://status.figma.com"
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "category": "开发",
+      "url": "https://www.githubstatus.com"
+    },
+    {
+      "id": "notion",
+      "name": "Notion",
+      "category": "开发",
+      "url": "https://status.notion.so"
+    },
+    {
+      "id": "postman",
+      "name": "Postman",
+      "category": "开发",
+      "url": "https://status.postman.com"
+    },
+    {
+      "id": "python",
+      "name": "Python / PyPI",
+      "category": "开发",
+      "url": "https://status.python.org"
+    },
+    {
+      "id": "sentry",
+      "name": "Sentry",
+      "category": "开发",
+      "url": "https://status.sentry.io"
+    },
+    {
+      "id": "stripe",
+      "name": "Stripe",
+      "category": "开发",
+      "url": "https://status.stripe.com"
+    },
+    {
+      "id": "npm",
+      "name": "npm",
+      "category": "开发",
+      "url": "https://status.npmjs.org"
+    },
+    {
+      "id": "sendgrid",
+      "name": "SendGrid",
+      "category": "开发",
+      "url": "https://status.sendgrid.com"
+    },
+    {
+      "id": "twilio",
+      "name": "Twilio",
+      "category": "开发",
+      "url": "https://status.twilio.com"
+    },
+    {
+      "id": "discord",
+      "name": "Discord",
+      "category": "社区",
+      "url": "https://discordstatus.com"
+    },
+    {
+      "id": "pinterest",
+      "name": "Pinterest",
+      "category": "社区",
+      "url": "https://www.pintereststatus.com"
+    },
+    {
+      "id": "reddit",
+      "name": "Reddit",
+      "category": "社区",
+      "url": "https://www.redditstatus.com"
+    },
+    {
+      "id": "twitch",
+      "name": "Twitch",
+      "category": "社区",
+      "url": "https://status.twitch.com"
+    },
+    {
+      "id": "zoom",
+      "name": "Zoom",
+      "category": "社区",
+      "url": "https://status.zoom.us"
+    }
+  ],
+  "stunServers": [
+    "stun:stun.cloudflare.com:3478",
+    "stun:stun.l.google.com:19302"
+  ],
+  "newsFeeds": [
+    {
+      "id": "openai",
+      "name": "OpenAI News",
+      "url": "https://openai.com/news/rss.xml"
+    }
+  ],
+  "pingNodes": []
+}

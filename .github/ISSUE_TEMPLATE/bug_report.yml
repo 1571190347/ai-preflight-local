@@ -1,0 +1,89 @@
+name: Bug report / 问题反馈
+description: Report a reproducible issue with installation, checks, or the interface.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎使用中文或英文。请保留错误原因与观察来源；“无法确认”本身不表示账号有风险。
+        Do not paste API keys, .env contents, session files, or unredacted personal reports.
+        涉及漏洞请先阅读 [安全报告说明](https://github.com/1571190347/ai-preflight-local/blob/main/docs/SECURITY.md)。
+  - type: input
+    id: version
+    attributes:
+      label: Version / 版本
+      description: Release tag or commit; for example v0.3.0.
+      placeholder: v0.3.0
+    validations:
+      required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation method / 安装方式
+      options:
+        - macOS / Linux installer
+        - Windows PowerShell installer
+        - Manual Release asset
+        - Source checkout / source ZIP
+        - Docker Compose
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: System and browser / 系统与浏览器
+      description: OS/version, x64 or ARM64, browser/version; Node and PowerShell versions if known.
+      placeholder: macOS, ARM64, Chrome; Node 24
+    validations:
+      required: true
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected module / 涉及模块
+      options:
+        - Installation / launcher / update
+        - Overview / backend connection
+        - IP / routing
+        - Claude
+        - ChatGPT / Codex
+        - IP profile
+        - Connectivity
+        - DNS / collector
+        - WebRTC
+        - Ping / remote agent
+        - Status / news
+        - WHOIS / RDAP
+        - Device / history / cards
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce / 复现步骤
+      description: Include the selected source and browser/backend/remote observation point. Use a public example target when possible.
+      placeholder: |
+        1. Open the overview.
+        2. Enable external checks and click ...
+        3. The source ... returns ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected_actual
+    attributes:
+      label: Expected and actual behavior / 预期与实际结果
+      description: Include the exact error or state, with sensitive values removed.
+    validations:
+      required: true
+  - type: textarea
+    id: network
+    attributes:
+      label: Relevant network details / 相关网络信息
+      description: For network failures, include DNS_MODE (auto/system/doh), reported DNS source, and whether browser extensions, a system proxy, or TUN are in use. Do not share proxy credentials or private domains.
+      placeholder: DNS_MODE=auto; backend DNS source=doh; browser request succeeds; no API key configured.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Redacted evidence / 脱敏证据
+      description: Optional screenshot or relevant log excerpt. Remove IPs, tokens, personal paths, private domains, and identifiers you do not want to publish.

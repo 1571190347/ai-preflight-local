@@ -1,0 +1,76 @@
+name: Public release install
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - name: Install public release with a private runtime
+        shell: bash
+        env:
+          PREFLIGHT_INSTALL_DIR: ${{ runner.temp }}/preflight installed
+          PREFLIGHT_NO_OPEN: "1"
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/old-node"
+          printf '#!/bin/sh\nexit 1\n' > "$RUNNER_TEMP/old-node/node"
+          chmod +x "$RUNNER_TEMP/old-node/node"
+          export PATH="$RUNNER_TEMP/old-node:$PATH"
+          curl -fsSL https://raw.githubusercontent.com/1571190347/ai-preflight-local/main/install.sh | sh
+          trap '"$PREFLIGHT_INSTALL_DIR/bin/ai-preflight" stop' EXIT
+          test -x "$PREFLIGHT_INSTALL_DIR/runtime/bin/node"
+          test ! -e "$PREFLIGHT_INSTALL_DIR/app/node_modules"
+          "$PREFLIGHT_INSTALL_DIR/bin/ai-preflight" status
+          curl --noproxy '*' --fail http://127.0.0.1:4173/api/health
+          curl --noproxy '*' --fail http://127.0.0.1:4173/ > "$RUNNER_TEMP/preflight-page.html"
+          printf 'PREFLIGHT_SMOKE_PRESERVED=yes\n' >> "$PREFLIGHT_INSTALL_DIR/config/.env"
+          curl -fsSL https://raw.githubusercontent.com/1571190347/ai-preflight-local/main/install.sh | sh
+          grep -q 'PREFLIGHT_SMOKE_PRESERVED=yes' "$PREFLIGHT_INSTALL_DIR/config/.env"
+          "$PREFLIGHT_INSTALL_DIR/bin/ai-preflight" status
+          "$PREFLIGHT_INSTALL_DIR/bin/ai-preflight" stop
+          if "$PREFLIGHT_INSTALL_DIR/bin/ai-preflight" status; then exit 1; fi
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install and update using Windows PowerShell 5.1
+        shell: powershell
+        env:
+          PREFLIGHT_INSTALL_DIR: ${{ runner.temp }}\preflight installed
+          PREFLIGHT_NO_OPEN: "1"
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $nodeDirectories = @(Get-Command node.exe -CommandType Application -All -ErrorAction SilentlyContinue | ForEach-Object { Split-Path $_.Source })
+          $env:PATH = (($env:PATH -split ';') | Where-Object { $nodeDirectories -notcontains $_.TrimEnd('\') }) -join ';'
+          irm https://raw.githubusercontent.com/1571190347/ai-preflight-local/main/install.ps1 | iex
+          $command = Join-Path $env:PREFLIGHT_INSTALL_DIR 'bin\ai-preflight.cmd'
+          try {
+            if (-not (Test-Path (Join-Path $env:PREFLIGHT_INSTALL_DIR 'runtime\node.exe'))) { throw 'Private runtime missing' }
+            if (Test-Path (Join-Path $env:PREFLIGHT_INSTALL_DIR 'app\node_modules')) { throw 'Runtime must not need dependencies' }
+            & $command status
+            if ($LASTEXITCODE -ne 0) { throw 'Status failed' }
+            $health = Invoke-RestMethod http://127.0.0.1:4173/api/health
+            if (-not $health.ok -or -not $health.data.local) { throw 'Health failed' }
+            Invoke-WebRequest -UseBasicParsing http://127.0.0.1:4173/ | Out-Null
+            $config = Join-Path $env:PREFLIGHT_INSTALL_DIR 'config\.env'
+            Add-Content $config 'PREFLIGHT_SMOKE_PRESERVED=yes' -Encoding UTF8
+            irm https://raw.githubusercontent.com/1571190347/ai-preflight-local/main/install.ps1 | iex
+            if (-not (Select-String -Path $config -SimpleMatch 'PREFLIGHT_SMOKE_PRESERVED=yes')) { throw 'Configuration lost' }
+            & $command status
+            if ($LASTEXITCODE -ne 0) { throw 'Status after update failed' }
+          } finally {
+            & $command stop
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'Stop failed' }
+          & $command status
+          if ($LASTEXITCODE -eq 0) { throw 'Service is still running' }
+          exit 0

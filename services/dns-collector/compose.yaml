@@ -1,0 +1,23 @@
+services:
+  dns-collector:
+    build: .
+    init: true
+    restart: unless-stopped
+    environment:
+      DNS_ZONE: ${DNS_ZONE:?Set DNS_ZONE in .env}
+      PUBLIC_IPV4: ${PUBLIC_IPV4:?Set PUBLIC_IPV4 in .env}
+      DNS_COLLECTOR_TOKEN: ${DNS_COLLECTOR_TOKEN:?Set a random DNS_COLLECTOR_TOKEN in .env}
+      MAX_SESSIONS: ${MAX_SESSIONS:-1000}
+      DNS_BIND: 0.0.0.0
+      DNS_PORT: 5353
+      API_BIND: 0.0.0.0
+      API_PORT: 8053
+    ports:
+      - "53:5353/udp"
+      - "53:5353/tcp"
+      - "127.0.0.1:8053:8053/tcp"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 128m

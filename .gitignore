@@ -1,0 +1,15 @@
+node_modules
+dist/
+release/
+.test-build/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!**/.env.example
+config.local.json
+state/
+*.log
+.DS_Store
+*.pem
+.openai/

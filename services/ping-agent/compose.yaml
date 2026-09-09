@@ -1,0 +1,20 @@
+services:
+  ping-agent:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PING_AGENT_BIND: 0.0.0.0
+      PING_AGENT_PORT: 8060
+    ports:
+      - "127.0.0.1:8060:8060"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    sysctls:
+      net.ipv4.ping_group_range: "0 2147483647"
+    tmpfs:
+      - /tmp:size=8m,noexec,nosuid
+    pids_limit: 32
+    mem_limit: 128m
+    cpus: 0.5

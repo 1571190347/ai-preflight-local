@@ -1,0 +1,24 @@
+services:
+  preflight:
+    build: .
+    init: true
+    ports:
+      - "127.0.0.1:4173:4173"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      BIND_ADDRESS: 0.0.0.0
+      PORT: 4173
+      CONFIG_FILE: /config/config.local.json
+    volumes:
+      - ./config:/config:ro
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    sysctls:
+      net.ipv4.ping_group_range: "0 2147483647"
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid
+    pids_limit: 64
+    mem_limit: 256m

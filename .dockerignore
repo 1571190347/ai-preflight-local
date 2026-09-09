@@ -1,0 +1,12 @@
+node_modules
+.git
+.openai
+.env
+.env.*
+config.local.json
+config
+dist
+.test-build
+*.tsbuildinfo
+work
+outputs

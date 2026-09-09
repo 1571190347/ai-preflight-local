@@ -1,0 +1,5 @@
+# Replace with a DNS name pointing to this machine.
+ping.example.com {
+    reverse_proxy 127.0.0.1:8060
+    # Access logging is deliberately not enabled.
+}

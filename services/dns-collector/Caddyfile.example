@@ -1,0 +1,6 @@
+# Change this to a public A record pointing at the collector's host.
+dns-api.example.com {
+    # Caddy obtains HTTPS automatically. Run Caddy on the Docker host.
+    # Access logging is deliberately not enabled.
+    reverse_proxy 127.0.0.1:8053
+}
