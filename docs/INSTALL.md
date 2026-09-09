@@ -109,7 +109,32 @@ node --env-file-if-exists=.env server/index.mjs
 
 这种直接运行方式使用当前目录中的 `.env` 与 `config.local.json`，在前台运行，按 `Ctrl+C` 停止。它不使用安装版的后台启动器或 `config/` 私有目录。离线拷贝时必须连同预构建的 `dist/` 一起拷贝；GitHub 的自动生成 “Source code” 压缩包不包含 `dist/`。
 
-卸载时先运行 `stop`，再删除专用安装目录；这也会删除其中的私有配置及本地日志，需保留的文件应先备份。网页检测记录保存在浏览器本地存储中，可以在页面中清除。
+## 干净卸载
+
+卸载前先停止后台服务。以下命令针对默认安装目录，并且只删除这个应用的专用目录。
+
+macOS / Linux：
+
+```sh
+install_dir="$HOME/.local/share/ai-preflight-local"
+if [ -x "$install_dir/bin/ai-preflight" ]; then "$install_dir/bin/ai-preflight" stop; fi
+rm -rf -- "$install_dir"
+```
+
+Windows PowerShell：
+
+```powershell
+$installDir = Join-Path $env:LOCALAPPDATA 'AI-Preflight-Local'
+$command = Join-Path $installDir 'bin\ai-preflight.cmd'
+if (Test-Path -LiteralPath $command) { & $command stop }
+Remove-Item -LiteralPath $installDir -Recurse -Force -ErrorAction SilentlyContinue
+```
+
+这会删除应用、`app.previous`、私有 Node.js 运行时、`config/.env`、`config/config.local.json`、运行状态和日志。需要保留自定义设置时，先备份 `config/`。如果安装时设置了 `PREFLIGHT_INSTALL_DIR`，必须把命令中的目录改为当时使用的专用目录；删除前可运行该目录中的 `status` 确认目标。
+
+浏览器中可选保存的脱敏历史不在安装目录内。软件仍能打开时，在“数据与设置”页面执行清空；软件已经删除时，在浏览器设置中删除 `http://127.0.0.1:4173` 的站点数据和权限。若修改过 `PORT`，同时删除相应端口的本地站点数据。
+
+安装器不会注册系统服务、开机启动项、计划任务，也不会修改 PATH 或全局 Node.js，因此无需注销这些内容。手动下载的发行包、源码目录、导出卡片和报告不会随安装目录删除，应在各自保存位置单独清理。使用 Docker Compose 时，在对应项目目录运行 `docker compose down --volumes` 后再删除该项目目录；本命令不会删除其他项目的容器或卷。
 
 ## 验证范围
 

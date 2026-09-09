@@ -48,6 +48,31 @@ Windows PowerShell:
 
 `start` runs the service in the background and reuses an existing instance. `open` opens the running service. Run the installer again to update: it stops the old instance and preserves `config/.env` and `config/config.local.json`. The installer does not change your shell PATH, so use the full commands above.
 
+### Clean uninstall
+
+Uninstalling removes the app, any private Node.js runtime downloaded by the installer, configuration, and local logs. Back up the installation's `config/` directory first if you want to retain custom settings.
+
+Default macOS / Linux installation:
+
+```sh
+install_dir="$HOME/.local/share/ai-preflight-local"
+if [ -x "$install_dir/bin/ai-preflight" ]; then "$install_dir/bin/ai-preflight" stop; fi
+rm -rf -- "$install_dir"
+```
+
+Default Windows installation in PowerShell:
+
+```powershell
+$installDir = Join-Path $env:LOCALAPPDATA 'AI-Preflight-Local'
+$command = Join-Path $installDir 'bin\ai-preflight.cmd'
+if (Test-Path -LiteralPath $command) { & $command stop }
+Remove-Item -LiteralPath $installDir -Recurse -Force -ErrorAction SilentlyContinue
+```
+
+If you set `PREFLIGHT_INSTALL_DIR`, replace `$install_dir` or `$installDir` with that dedicated directory. To remove redacted history saved in the browser, first use the clear action under “Data and settings.” If the app has already been removed, delete the site data and permissions for `http://127.0.0.1:4173` in your browser settings.
+
+The installer creates no system service or startup entry and does not change PATH, so there is nothing else to unregister. Release archives, exported cards, and reports saved elsewhere remain in their chosen download locations and must be deleted separately. For a manually extracted copy, stop its foreground Node process and delete that extracted directory.
+
 | Environment variable | Effect |
 | --- | --- |
 | `PREFLIGHT_INSTALL_DIR` | Absolute installation directory; defaults to `~/.local/share/ai-preflight-local` on macOS / Linux or `%LOCALAPPDATA%\AI-Preflight-Local` on Windows |

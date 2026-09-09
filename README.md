@@ -48,6 +48,31 @@ Windows PowerShell：
 
 `start` 在后台运行，重复启动会复用已有实例；`open` 打开正在运行的服务页面。重复运行安装命令即可更新，安装目录下的 `config/.env` 和 `config/config.local.json` 会保留。更新先停止旧实例。安装器不修改 shell 的 PATH，上面的完整路径可以直接使用。
 
+### 干净卸载
+
+卸载会删除程序、安装器下载的私有 Node.js、配置和本地日志。需要保留自定义配置时，请先备份安装目录中的 `config/`。
+
+macOS / Linux 默认安装：
+
+```sh
+install_dir="$HOME/.local/share/ai-preflight-local"
+if [ -x "$install_dir/bin/ai-preflight" ]; then "$install_dir/bin/ai-preflight" stop; fi
+rm -rf -- "$install_dir"
+```
+
+Windows PowerShell 默认安装：
+
+```powershell
+$installDir = Join-Path $env:LOCALAPPDATA 'AI-Preflight-Local'
+$command = Join-Path $installDir 'bin\ai-preflight.cmd'
+if (Test-Path -LiteralPath $command) { & $command stop }
+Remove-Item -LiteralPath $installDir -Recurse -Force -ErrorAction SilentlyContinue
+```
+
+使用过 `PREFLIGHT_INSTALL_DIR` 时，把上面的 `$install_dir` 或 `$installDir` 改成当时选择的专用目录。为了同时清除浏览器内保存的脱敏历史，先在页面“数据与设置”中点击清空；如果页面已经删掉，可在浏览器的站点数据设置中删除 `http://127.0.0.1:4173` 的数据和权限。
+
+安装器没有注册系统服务、开机启动项，也没有修改 PATH，因此不需要再清理这些项目。手动下载的 ZIP、TAR.GZ、导出卡片和报告位于你选择的下载位置，不在安装目录中，需要自行删除。手动解压运行的版本在停止前台 Node 进程后，直接删除解压目录即可。
+
 | 安装选项 | 作用 |
 | --- | --- |
 | `PREFLIGHT_INSTALL_DIR` | 自定义绝对安装路径；默认 macOS / Linux 为 `~/.local/share/ai-preflight-local`，Windows 为 `%LOCALAPPDATA%\AI-Preflight-Local` |
