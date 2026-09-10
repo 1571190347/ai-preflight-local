@@ -21,6 +21,8 @@
 
 ## 公开发行包安装验证
 
+v0.4.0 的[公开安装验证](https://github.com/1571190347/ai-preflight-local/actions/runs/34456209484)已在 macOS、Ubuntu 和 Windows 全部通过。Windows 第一次下载官方 Node.js 遇到 HTTP 403，重试后通过；该网络限制仍可能在其他环境出现。安装验证不包含浏览器内的第三方检测结果。
+
 上一版 v0.3.0 发布后，[公开安装工作流](https://github.com/1571190347/ai-preflight-local/actions/runs/34313530579) 的 macOS、Ubuntu 和 Windows 三个任务全部通过。实际从 GitHub 下载发行包，验证 SHA256，在没有可用 Node 的路径下安装私有 Node.js，再检查页面与健康接口、更新保留配置、状态和停止。v0.4.0 的跨平台结论以该版本发布后触发的工作流为准。
 
 本机另外在空目录运行 README 中的公开安装命令；不安装 `node_modules`，启动、健康接口、页面和停止均通过。测试时设置 `PREFLIGHT_NO_OPEN=1`，没有验证系统自动打开浏览器的行为。

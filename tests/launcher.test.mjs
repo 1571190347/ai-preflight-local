@@ -177,7 +177,11 @@ test(
     t.after(() => new Promise((resolve) => unrelated.close(resolve)));
     const result = await run(root);
     assert.equal(result.code, 1);
-    assert.match(result.stderr, /端口.*已被占用/);
+    // Windows can report an exclusive socket binding as EACCES instead of EADDRINUSE.
+    assert.match(
+      result.stderr,
+      process.platform === "win32" ? /端口.*已被占用|listen EACCES/ : /端口.*已被占用/,
+    );
     assert.equal((await request(port, "/")).code, 200);
     assertOK(await run(root, ["stop"]));
   },
