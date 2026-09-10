@@ -18,11 +18,11 @@ irm https://raw.githubusercontent.com/1571190347/ai-preflight-local/main/install
 
 默认安装到当前用户的目录，不需要管理员权限，不修改全局 Node.js、PATH、系统代理或系统执行策略。不会注册开机启动；关闭浏览器后服务仍可运行，可用下面的 `stop` 命令停止。安装器代码可以直接查看：[macOS / Linux](../install.sh)、[Windows](../install.ps1)。
 
-| 系统 | 默认目录 | 要求 |
-| --- | --- | --- |
-| macOS | `~/.local/share/ai-preflight-local` | x64 / Apple Silicon；系统自带 curl、tar 和 SHA256 工具 |
-| Linux | `~/.local/share/ai-preflight-local` | x64 / arm64；curl、tar、awk、grep、sed、mktemp 和 SHA256 工具；官方 Node.js 所需的 glibc 环境 |
-| Windows | `%LOCALAPPDATA%\AI-Preflight-Local` | x64 / arm64；Windows PowerShell 5.1 或 PowerShell 7；可运行 Node.js 24 的系统 |
+| 系统    | 默认目录                            | 要求                                                                                          |
+| ------- | ----------------------------------- | --------------------------------------------------------------------------------------------- |
+| macOS   | `~/.local/share/ai-preflight-local` | x64 / Apple Silicon；系统自带 curl、tar 和 SHA256 工具                                        |
+| Linux   | `~/.local/share/ai-preflight-local` | x64 / arm64；curl、tar、awk、grep、sed、mktemp 和 SHA256 工具；官方 Node.js 所需的 glibc 环境 |
+| Windows | `%LOCALAPPDATA%\AI-Preflight-Local` | x64 / arm64；Windows PowerShell 5.1 或 PowerShell 7；可运行 Node.js 24 的系统                 |
 
 如果 PATH 中已有 Node.js 22.13 或更高版本，会直接使用它。Linux Alpine / musl 不适用私有运行时的自动下载方式，可使用项目的 Docker 方案或自行准备兼容的 Node.js。
 
@@ -64,7 +64,7 @@ Windows PowerShell：
 
 设置示例见 [`.env.example`](../.env.example) 和 [`config.example.json`](../config.example.json)。一行安装后，应修改安装目录内的 `config/.env` 与 `config/config.local.json`；修改后先 `stop` 再 `start`。例如端口冲突时可在 `config/.env` 写入 `PORT=4174`，然后访问启动器显示的地址。安装版始终只监听 `127.0.0.1`。
 
-普通检测无需填写密钥。付费数据源、自建 DNS 收集器和自建 Ping 节点等扩展需要另行配置；这不会影响其他可用检测项目。启动网页不会自动执行第三方检测，实际请求由页面中明确的检测操作触发。具体数据流见 [隐私说明](PRIVACY.md)。
+普通检测无需填写密钥。打开首页会自动查询公开出口、IP 画像和 Claude / ChatGPT 入口并生成报告；付费风险字段、自建 DNS 收集器和自建 Ping 节点等扩展需要另行配置。其他检测由页面中的对应操作触发。具体数据流见 [隐私说明](PRIVACY.md)。
 
 ## 升级与指定版本
 
@@ -72,25 +72,25 @@ Windows PowerShell：
 
 如果只想安装，不立即启动，或想选择安装位置、固定版本，可以使用环境变量：
 
-| 变量 | 作用 |
-| --- | --- |
-| `PREFLIGHT_INSTALL_DIR` | 专用的绝对安装路径；不能使用家目录、磁盘根目录、符号链接或含其他文件的目录 |
-| `PREFLIGHT_VERSION` | 固定 GitHub Release，例如 `v0.3.0`；未设置时使用最新正式版 |
-| `PREFLIGHT_NO_START=1` | 安装或升级完成后不启动服务 |
-| `PREFLIGHT_NO_OPEN=1` | 启动服务但不打开浏览器，适合无桌面的机器 |
-| `PREFLIGHT_REPOSITORY` | 使用自己的兼容 fork，格式为 `GitHub用户名/仓库名`；需要有相同命名规则的发行包 |
+| 变量                    | 作用                                                                          |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| `PREFLIGHT_INSTALL_DIR` | 专用的绝对安装路径；不能使用家目录、磁盘根目录、符号链接或含其他文件的目录    |
+| `PREFLIGHT_VERSION`     | 固定 GitHub Release，例如 `v0.4.0`；未设置时使用最新正式版                    |
+| `PREFLIGHT_NO_START=1`  | 安装或升级完成后不启动服务                                                    |
+| `PREFLIGHT_NO_OPEN=1`   | 启动服务但不打开浏览器，适合无桌面的机器                                      |
+| `PREFLIGHT_REPOSITORY`  | 使用自己的兼容 fork，格式为 `GitHub用户名/仓库名`；需要有相同命名规则的发行包 |
 
 macOS / Linux 示例（变量需要传给管道右侧的安装进程）：
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/1571190347/ai-preflight-local/main/install.sh | PREFLIGHT_INSTALL_DIR="$HOME/Tools/ai-preflight-local" PREFLIGHT_VERSION=v0.3.0 PREFLIGHT_NO_OPEN=1 sh
+curl -fsSL https://raw.githubusercontent.com/1571190347/ai-preflight-local/main/install.sh | PREFLIGHT_INSTALL_DIR="$HOME/Tools/ai-preflight-local" PREFLIGHT_VERSION=v0.4.0 PREFLIGHT_NO_OPEN=1 sh
 ```
 
 Windows PowerShell 示例：
 
 ```powershell
 $env:PREFLIGHT_INSTALL_DIR = 'D:\Tools\AI-Preflight-Local'
-$env:PREFLIGHT_VERSION = 'v0.3.0'
+$env:PREFLIGHT_VERSION = 'v0.4.0'
 $env:PREFLIGHT_NO_OPEN = '1'
 irm https://raw.githubusercontent.com/1571190347/ai-preflight-local/main/install.ps1 | iex
 ```

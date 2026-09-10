@@ -16,6 +16,7 @@ import {
   History as HistoryIcon,
   Palette,
   Square,
+  Copy,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
@@ -42,8 +43,11 @@ import {
   downloadText,
   exitCheck,
   linkCheck,
+  buildQuickReport,
+  buildAiReadableReport,
   sleep,
   type Config,
+  type QuickReport,
 } from "./client";
 import { inspectDevice, collectWebRTC, redact } from "./browser-tools";
 import { cardThemes, cardPatterns, cardStamps, makeIpCard } from "./card-tools";
@@ -109,8 +113,8 @@ export default function Workbench() {
   const [view, setView] = useState("overview");
   const [config, setConfig] = useState<Config | null>(null);
   const [configError, setConfigError] = useState("");
-  const [external, setExternal] = useState(false);
-  const [hidden, setHidden] = useState(true);
+  const [external, setExternal] = useState(true);
+  const [hidden, setHidden] = useState(false);
   const [fingerprint, setFingerprint] = useState(false);
   const [saveEnabled, setSaveEnabled] = useState(false);
   const [data, setData] = useState<Data>({});
@@ -118,6 +122,7 @@ export default function Workbench() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const active = useRef<AbortController | null>(null);
+  const autoStarted = useRef(false);
   const [exitIds, setExitIds] = useState<string[]>([]);
   const [linkIds, setLinkIds] = useState<string[]>([]);
   const [ip, setIp] = useState("");
@@ -156,6 +161,11 @@ export default function Workbench() {
     return () => ctl.abort();
   }, []);
   useEffect(() => () => active.current?.abort(), []);
+  useEffect(() => {
+    if (!config || autoStarted.current) return;
+    autoStarted.current = true;
+    void runQuickReport(config);
+  }, [config]);
   function put(key: string, value: unknown) {
     setData((current) => ({ ...current, [key]: value }));
   }
@@ -231,6 +241,133 @@ export default function Workbench() {
     return perform(key, async (signal) =>
       batch(chosenEndpoints(config!.connectionSources, ids), (e) => linkCheck(e, signal)),
     );
+  }
+  async function runQuickReport(reportConfig = config) {
+    if (!reportConfig || active.current) return;
+    const ctl = new AbortController();
+    active.current = ctl;
+    setExternal(true);
+    setBusy("quick");
+    setError("");
+    setNotice("");
+    setData((current) => ({
+      ...current,
+      quick: { state: "running", stage: "正在识别公网出口…" },
+    }));
+    try {
+      const browserExits = await batch(
+        reportConfig.exitSources,
+        (endpoint) => exitCheck(endpoint, ctl.signal),
+        4,
+      );
+      const sharedEndpoints = reportConfig.exitSources
+        .filter((endpoint) => endpointPlatform(endpoint) === "shared")
+        .slice(0, 3);
+      const serverExits = await batch(
+        sharedEndpoints,
+        async (endpoint) => {
+          try {
+            return await api(reportConfig, "/api/exit", { id: endpoint.id }, ctl.signal);
+          } catch (cause) {
+            if (ctl.signal.aborted) throw cause;
+            return {
+              id: endpoint.id,
+              name: endpoint.name,
+              source: endpoint.url,
+              observer: "本机服务",
+              state: "unknown",
+              ip: null,
+              error: cause instanceof Error ? cause.message : "无法读取出口",
+            };
+          }
+        },
+        3,
+      );
+      const preferred = [...browserExits, ...serverExits].find(
+        (row: Data) => row.state === "received" && row.ip && row.id === "ipv4",
+      );
+      const fallback = [...browserExits, ...serverExits].find(
+        (row: Data) => row.state === "received" && row.ip,
+      );
+      const currentIp = String(preferred?.ip ?? fallback?.ip ?? "");
+      setData((current) => ({
+        ...current,
+        quick: { state: "running", stage: "正在查询 IP 属性和 AI 连接…" },
+      }));
+      const aiEndpoints = reportConfig.connectionSources.filter(
+        (endpoint) => endpointPlatform(endpoint) !== "shared",
+      );
+      const providers = ["ipapi", "ipwho", "shodan"];
+      if (reportConfig.configured.abuse) providers.push("abuse");
+      const [basics, device, links, profiles] = await Promise.all([
+        browserBasics(),
+        inspectDevice(false),
+        batch(
+          aiEndpoints,
+          async (endpoint) => ({
+            ...(await linkCheck(endpoint, ctl.signal)),
+            platform: endpointPlatform(endpoint),
+          }),
+          4,
+        ),
+        currentIp
+          ? api(reportConfig, "/api/ip-profile", { ip: currentIp, providers }, ctl.signal).catch(
+              (cause) => {
+                if (ctl.signal.aborted) throw cause;
+                return [
+                  {
+                    source: "IP 画像",
+                    state: "unknown",
+                    message: cause instanceof Error ? cause.message : "查询失败",
+                  },
+                ];
+              },
+            )
+          : Promise.resolve([]),
+      ]);
+      const report = buildQuickReport({
+        currentIp: currentIp || null,
+        exits: [...browserExits, ...serverExits],
+        profiles,
+        links,
+      });
+      if (ctl.signal.aborted) return;
+      if (currentIp) setIp(currentIp);
+      setData((current) => ({
+        ...current,
+        quick: report,
+        basics,
+        device,
+        ip: browserExits,
+        serverIp: serverExits,
+        quality: profiles,
+        connect: links,
+        claudeIp: browserExits.filter((row: Data) => row.platform === "claude"),
+        gptIp: browserExits.filter((row: Data) => row.platform === "gpt"),
+        claudeConnect: links.filter((row: Data) => row.platform === "claude"),
+        gptConnect: links.filter((row: Data) => row.platform === "gpt"),
+      }));
+      setNotice("自动体检已完成。可在下方模块继续查看原始证据。");
+    } catch (cause) {
+      if (!ctl.signal.aborted) {
+        const message = cause instanceof Error ? cause.message : "自动体检失败";
+        setData((current) => ({ ...current, quick: { state: "error", message } }));
+        setError(message);
+      }
+    } finally {
+      if (active.current === ctl) active.current = null;
+      setBusy("");
+    }
+  }
+  async function copyAiReport() {
+    const report = data.quick as QuickReport | undefined;
+    if (report?.state !== "finished") return;
+    try {
+      await navigator.clipboard.writeText(buildAiReadableReport(report, data));
+      setNotice("已复制脱敏的 AI 易读报告，可以粘贴给你的 AI 继续分析。");
+    } catch {
+      setError("浏览器不允许写入剪贴板，请改用“下载 AI 报告”。");
+    }
   }
   function command(label: string, key: string, action: () => void, outside = true) {
     return (
@@ -480,6 +617,7 @@ export default function Workbench() {
   }
   const selectedTitle = sections.find((x) => x[0] === view)?.[1] ?? "总览";
   const profiles = data.quality ?? [];
+  const quick = data.quick as Data | undefined;
   return (
     <div className="local-shell">
       <header className="local-header">
@@ -494,7 +632,7 @@ export default function Workbench() {
           <span className="brand-mark">
             <Activity size={23} />
           </span>
-          AI 体检站 <small>LOCAL 0.3</small>
+          AI 体检站 <small>LOCAL 0.4</small>
         </a>
         <div className="header-controls">
           <label>
@@ -529,7 +667,7 @@ export default function Workbench() {
           <div className="local-heading">
             <div>
               <p className="eyebrow">LOCAL-FIRST / NETWORK DIAGNOSTICS</p>
-              <h1>{view === "overview" ? "你的网络，你来检查。" : selectedTitle}</h1>
+              <h1>{view === "overview" ? "打开即出报告，看懂当前网络。" : selectedTitle}</h1>
             </div>
             <div className="session-control">
               <span>
@@ -545,7 +683,7 @@ export default function Workbench() {
           </div>
           <p className="session-note">
             {external
-              ? "已允许主动运行外部检测。点击按钮后才发送请求；目的地见各模块说明。"
+              ? "首页会自动请求公开 IP、网络属性和 Claude / ChatGPT 入口来生成报告；关闭后仅影响后续手动检测。"
               : "外部检测已关闭。本地基础检查、设备信息与卡片生成仍可使用。"}
           </p>
           {configError && (
@@ -574,23 +712,120 @@ export default function Workbench() {
             </div>
           )}
           <Pane id="overview">
+            <section className={`quick-report quick-${quick?.level ?? "loading"}`}>
+              <div className="quick-report-heading">
+                <div>
+                  <span className="section-label">自动体检报告</span>
+                  <h2>
+                    {quick?.state === "finished"
+                      ? quick.title
+                      : quick?.state === "error"
+                        ? "自动体检没有完成"
+                        : "正在检查你的网络环境…"}
+                  </h2>
+                  <p>
+                    {quick?.state === "finished"
+                      ? quick.description
+                      : (quick?.message ?? quick?.stage ?? "正在连接公开检测来源，请稍候。")}
+                  </p>
+                </div>
+                <div className="quick-actions">
+                  <span className={`quick-verdict ${quick?.level ?? "loading"}`}>
+                    {quick?.state === "finished"
+                      ? quick.level === "risk"
+                        ? "高风险信号"
+                        : quick.level === "attention"
+                          ? "需要留意"
+                          : quick.level === "clear"
+                            ? "未见明显风险"
+                            : "资料不完整"
+                      : "检测中"}
+                  </span>
+                  <button
+                    className="quiet-button"
+                    disabled={!!busy || !config}
+                    onClick={() => void runQuickReport()}
+                  >
+                    <RefreshCw size={15} className={busy === "quick" ? "spinning" : ""} />
+                    重新检测
+                  </button>
+                  {quick?.state === "finished" && (
+                    <>
+                      <button className="quiet-button" onClick={() => void copyAiReport()}>
+                        <Copy size={15} />
+                        复制给 AI
+                      </button>
+                      <button
+                        className="quiet-button"
+                        onClick={() =>
+                          downloadText(
+                            "ai-preflight-report.md",
+                            buildAiReadableReport(quick as QuickReport, data),
+                            "text/markdown;charset=utf-8",
+                          )
+                        }
+                      >
+                        <Download size={15} />
+                        下载 AI 报告
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+              {quick?.state === "finished" && (
+                <>
+                  <dl className="quick-facts">
+                    {[
+                      ["当前公网 IP", display(quick.facts.ip) || "未获取"],
+                      ["国家 / 地区", quick.facts.country || "未提供"],
+                      ["ASN", quick.facts.asn || "未提供"],
+                      ["运营商 / 组织", quick.facts.organization || "未提供"],
+                      ["网络类型", quick.facts.type || "未提供"],
+                      ["数据覆盖", `${quick.coverage.received} / ${quick.coverage.total} 个来源`],
+                    ].map(([label, value]) => (
+                      <div key={String(label)}>
+                        <dt>{String(label)}</dt>
+                        <dd>{String(value)}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <div className="finding-grid">
+                    {quick.findings.map((finding: Data) => (
+                      <article className={`finding-card finding-${finding.level}`} key={finding.id}>
+                        <div>
+                          <span className="finding-dot" />
+                          <strong>{finding.title}</strong>
+                        </div>
+                        <p>{finding.detail}</p>
+                        <small>{finding.advice}</small>
+                      </article>
+                    ))}
+                  </div>
+                  <p className="quick-time">
+                    检测时间：{new Date(quick.checkedAt).toLocaleString()}。完整响应可在“IP 画像”“IP
+                    与分流”和平台页面查看。
+                  </p>
+                  <p className="quick-share-note">
+                    “复制给 AI”和 Markdown 下载会自动隐藏公网 IP，并附上证据边界与分析要求。
+                  </p>
+                </>
+              )}
+            </section>
             <div className="overview-grid">
               <section className="overview-primary">
-                <span className="section-label">01 / 从本地开始</span>
-                <h2>先检查浏览器基础环境</h2>
-                <p>临时测试本站 Cookie、存储和安全上下文。无需 AI 账号，也不会发送外部请求。</p>
-                {command(
-                  "运行本地检查",
-                  "basics",
-                  () => void perform("basics", () => browserBasics(), false),
-                  false,
-                )}
+                <span className="section-label">报告如何判断</span>
+                <h2>优先看明确证据，不猜封号概率</h2>
+                <p>
+                  报告会识别数据源明确标记的代理、VPN、Tor、滥用、机房属性、出口地区差异和 AI
+                  入口连通情况。缺少风险数据时直接写“资料不完整”。
+                </p>
+                {command("重新生成完整报告", "quick", () => void runQuickReport())}
               </section>
               <section className="overview-secondary">
                 <ShieldCheck size={28} />
-                <h3>看得到数据去向</h3>
+                <h3>“未发现”不等于绝对干净</h3>
                 <p>
-                  不读取账号与聊天记录。检测结果默认只在页面内存中。需要保存时，手动创建脱敏快照。
+                  平台不会公开内部风控分。账号行为、付款资料、登录历史和其他共享出口使用者，不是网页检测能完整看到的。
                 </p>
                 <button className="text-link" onClick={() => setView("privacy")}>
                   查看所有数据源 <ArrowRight size={15} />
@@ -608,7 +843,7 @@ export default function Workbench() {
                 ))}
               </div>
             )}
-            <h2 className="subheading">选择要排查的问题</h2>
+            <h2 className="subheading">继续查看详细证据</h2>
             <div className="module-grid">
               {[
                 ["ip", "不同网站走了不同出口？", "IPv4 / IPv6 与目的地分流"],
@@ -1626,11 +1861,12 @@ export default function Workbench() {
           </Pane>
           <Pane id="privacy">
             <section className="tool-panel">
-              <h2>默认不外呼，按操作开启</h2>
+              <h2>首页自动体检，其他检测按操作运行</h2>
               <div className="privacy-facts">
                 <p>
                   <CheckMark />
-                  打开页面只读取本机配置；没有分析统计、广告 SDK、远程字体或自动运行的网络检测。
+                  打开首页会自动查询公网出口、IP 画像和 Claude / ChatGPT
+                  入口，用于生成体检报告；不包含统计、广告 SDK 或远程字体。
                 </p>
                 <p>
                   <CheckMark />
@@ -1666,7 +1902,7 @@ export default function Workbench() {
                       "preflight-report.json",
                       JSON.stringify(
                         {
-                          version: "0.3.0",
+                          version: "0.4.0",
                           exportedAt: new Date().toISOString(),
                           results: redact(data),
                         },

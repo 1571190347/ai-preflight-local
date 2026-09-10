@@ -219,7 +219,7 @@ const server = http.createServer(async (req, res) => {
           url,
         })),
         apiToken,
-        version: "0.3.0",
+        version: "0.4.0",
         dnsTransport,
         backendCheckSources,
         configured: {
@@ -236,7 +236,7 @@ const server = http.createServer(async (req, res) => {
       ok: true,
       data: {
         local: true,
-        version: "0.3.0",
+        version: "0.4.0",
         instanceId: process.env.PREFLIGHT_INSTANCE_ID || null,
       },
     });

@@ -1,10 +1,10 @@
 # AI Preflight · Local
 
-**v0.3.0 · Runs on your computer · Chinese interface · MIT licensed**　[中文](README.md)
+**v0.4.0 · Immediate report · Runs locally · MIT licensed**　[中文](README.md)
 
-Check public IPs, routing differences, Claude / ChatGPT connectivity, IP profiles, DNS, WebRTC, and browser capabilities from your own computer. The interface and backend run locally. External checks start disabled and require a deliberate click after you enable them.
+Check public IPs, routing differences, Claude / ChatGPT connectivity, IP profiles, DNS, WebRTC, and browser capabilities from your own computer. The interface and backend run locally. Opening the home page now generates an immediate network report covering explicit proxy/VPN/Tor/abuse flags, hosting attributes, route-region differences, and AI endpoint connectivity. Other deep checks remain manual.
 
-Results are observations with sources, useful for questions such as “Why does my browser work while the backend fails?” The app cannot read platform trust scores, account status, or suspension probabilities. Missing data stays unknown.
+The report leads with a plain-language outcome and preserves the source and advice behind every item. It can copy or download an AI-readable Markdown report with the public IP masked, evidence boundaries included, and a prompt for compliant environment advice. The app cannot read platform trust scores, account status, or suspension probabilities. Missing data never becomes a “clean IP” claim.
 
 ## Install and start with one command
 
@@ -73,18 +73,18 @@ If you set `PREFLIGHT_INSTALL_DIR`, replace `$install_dir` or `$installDir` with
 
 The installer creates no system service or startup entry and does not change PATH, so there is nothing else to unregister. Release archives, exported cards, and reports saved elsewhere remain in their chosen download locations and must be deleted separately. For a manually extracted copy, stop its foreground Node process and delete that extracted directory.
 
-| Environment variable | Effect |
-| --- | --- |
+| Environment variable    | Effect                                                                                                                                              |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `PREFLIGHT_INSTALL_DIR` | Absolute installation directory; defaults to `~/.local/share/ai-preflight-local` on macOS / Linux or `%LOCALAPPDATA%\AI-Preflight-Local` on Windows |
-| `PREFLIGHT_VERSION` | Stable release tag, such as `v0.3.0`; otherwise uses the latest Release |
-| `PREFLIGHT_NO_START=1` | Install without starting |
-| `PREFLIGHT_NO_OPEN=1` | Start without opening the browser |
+| `PREFLIGHT_VERSION`     | Stable release tag, such as `v0.4.0`; otherwise uses the latest Release                                                                             |
+| `PREFLIGHT_NO_START=1`  | Install without starting                                                                                                                            |
+| `PREFLIGHT_NO_OPEN=1`   | Start without opening the browser                                                                                                                   |
 
-Set these before running the relevant installer or launcher. In the Unix pipeline, place `PREFLIGHT_VERSION=v0.3.0` immediately before the final `sh`; in PowerShell, first run `$env:PREFLIGHT_VERSION = 'v0.3.0'`.
+Set these before running the relevant installer or launcher. In the Unix pipeline, place `PREFLIGHT_VERSION=v0.4.0` immediately before the final `sh`; in PowerShell, first run `$env:PREFLIGHT_VERSION = 'v0.4.0'`.
 
 ### Run a Release asset manually
 
-Download `ai-preflight-local-v0.3.0.zip` or `.tar.gz` from [Releases](https://github.com/1571190347/ai-preflight-local/releases), check it against that release's `SHA256SUMS`, and extract it. This method requires your own Node.js 22.13+. From the extracted project directory:
+Download `ai-preflight-local-v0.4.0.zip` or `.tar.gz` from [Releases](https://github.com/1571190347/ai-preflight-local/releases), check it against that release's `SHA256SUMS`, and extract it. This method requires your own Node.js 22.13+. From the extracted project directory:
 
 ```sh
 node --env-file-if-exists=.env server/index.mjs
@@ -94,24 +94,24 @@ Stop with `Ctrl+C`. This method uses `.env` and `config.local.json` in the proje
 
 ## Features
 
-| Module | Available observations and operations |
-| --- | --- |
-| Overview / backend connection | Local browser checks; explicitly test Cloudflare HTTPS, ipwho.is, and IANA RDAP, with per-source DNS provenance, HTTP result, duration, or failure reason |
-| IP and routing | Select sources and compare browser / backend IPv4, IPv6, HTTP exits, countries, and trace fields; IP masking is on by default |
-| Claude | Its own exit and website-response results, with official region and login troubleshooting links |
-| ChatGPT / Codex | Its own ChatGPT exit and website / OpenAI API response results; no access to login credentials or model permissions |
-| IP profiles | Query a public IP using selected ipapi.is, ipwho.is, AbuseIPDB, or Shodan InternetDB sources; view geography, ASN, organization, provider flags, and historical records separately |
-| Connectivity | Three browser HTTP rounds per selected site and a median; opaque responses explicitly have unreadable HTTP status |
-| DNS | System DNS and network interfaces of the Node host; optional authoritative DNS collector with 3 / 10 random-name probes and resolver observations |
-| WebRTC | Browser-visible ICE candidates from multiple STUN servers, compared with HTTP exits |
-| Ping | Local ICMP, public Globalping with up to 20 probes per measurement, or your own remote agents |
-| Service status | 31 built-in sources, categories and incidents; incompatible feeds retain their official links |
-| WHOIS / RDAP | Domain, public IP, and ASN registration queries; TCP 43 WHOIS fallback and searchable RDAP suffixes |
-| Device / fingerprint | Browser language, timezone, capabilities, WebGL / Canvas checks, and a local fingerprint demonstration |
-| Local history | Optional redacted summaries in the current browser, with viewing and deletion; no automatic saving |
-| AI news | Manually load configured RSS / Atom feeds, filter, paginate, and open originals |
-| IP cards | 22 themes, 8 patterns × 8 stamps, and local SVG / PNG export; downloaded cards always mask IPs |
-| Data and settings | Request destinations, data boundaries, and optional-service configuration status |
+| Module                        | Available observations and operations                                                                                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Overview / AI-readable report | Automatic exit, IP-profile, and Claude / ChatGPT checks with evidence-based findings; copy or download a redacted Markdown report for AI analysis                                  |
+| IP and routing                | Select sources and compare browser / backend IPv4, IPv6, HTTP exits, countries, and trace fields; IPs can be hidden at any time                                                    |
+| Claude                        | Its own exit and website-response results, with official region and login troubleshooting links                                                                                    |
+| ChatGPT / Codex               | Its own ChatGPT exit and website / OpenAI API response results; no access to login credentials or model permissions                                                                |
+| IP profiles                   | Query a public IP using selected ipapi.is, ipwho.is, AbuseIPDB, or Shodan InternetDB sources; view geography, ASN, organization, provider flags, and historical records separately |
+| Connectivity                  | Three browser HTTP rounds per selected site and a median; opaque responses explicitly have unreadable HTTP status                                                                  |
+| DNS                           | System DNS and network interfaces of the Node host; optional authoritative DNS collector with 3 / 10 random-name probes and resolver observations                                  |
+| WebRTC                        | Browser-visible ICE candidates from multiple STUN servers, compared with HTTP exits                                                                                                |
+| Ping                          | Local ICMP, public Globalping with up to 20 probes per measurement, or your own remote agents                                                                                      |
+| Service status                | 31 built-in sources, categories and incidents; incompatible feeds retain their official links                                                                                      |
+| WHOIS / RDAP                  | Domain, public IP, and ASN registration queries; TCP 43 WHOIS fallback and searchable RDAP suffixes                                                                                |
+| Device / fingerprint          | Browser language, timezone, capabilities, WebGL / Canvas checks, and a local fingerprint demonstration                                                                             |
+| Local history                 | Optional redacted summaries in the current browser, with viewing and deletion; no automatic saving                                                                                 |
+| AI news                       | Manually load configured RSS / Atom feeds, filter, paginate, and open originals                                                                                                    |
+| IP cards                      | 22 themes, 8 patterns × 8 stamps, and local SVG / PNG export; downloaded cards always mask IPs                                                                                     |
+| Data and settings             | Request destinations, data boundaries, and optional-service configuration status                                                                                                   |
 
 Claude and ChatGPT keep separate results. Region guidance only uses observations from the relevant platform; shared Cloudflare results do not stand in for a platform's country. Custom sources can declare `platform: "claude"`, `"gpt"`, or `"shared"`.
 
@@ -119,20 +119,20 @@ See [feature coverage](docs/FEATURE-COVERAGE.md) for prerequisites, provider not
 
 ## First use
 
-1. Run the local basics from the overview to check the page and API.
-2. Read the destinations, enable external checks, and click “检查后台连接” to test backend access.
-3. Select IP sources and compare browser / backend exits, then run the relevant Claude or ChatGPT checks.
-4. Use profiles, DNS, WebRTC, or Ping as needed. Keep error details and unknown results distinct from account conclusions.
+1. Open the page and wait for the automatic report, then read the verdict, evidence, and unknown-data notices.
+2. Copy or download the redacted Markdown report and ask your AI for prioritized, policy-compliant troubleshooting steps.
+3. Compare browser and backend routes when needed, then inspect the separate Claude or ChatGPT results.
+4. Run DNS, WebRTC, or Ping only when deeper evidence is useful. Keep errors and unknowns distinct from account conclusions.
 
 ## DNS and proxy behavior
 
 `DNS_MODE` controls public-target resolution by the local backend. It does not change operating-system, browser, or proxy settings. The system DNS / interface inspection continues to report the system's own view.
 
-| Mode | Behavior |
-| --- | --- |
+| Mode             | Behavior                                                                                                                                                                                                                                                 |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `auto` — default | Try system DNS first. Fall back to fixed Cloudflare DoH only when answers include `198.18.0.0/15` Fake-IP addresses and no other non-public addresses. Ordinary private answers, mixed private answers, DNS errors, and timeouts do not trigger fallback |
-| `system` | Use system DNS only; reject Fake-IP and other non-public answers without contacting DoH |
-| `doh` | Resolve permitted public domains directly through the fixed DoH service; still reject private / reserved IPs, special local names, and invalid answers |
+| `system`         | Use system DNS only; reject Fake-IP and other non-public answers without contacting DoH                                                                                                                                                                  |
+| `doh`            | Resolve permitted public domains directly through the fixed DoH service; still reject private / reserved IPs, special local names, and invalid answers                                                                                                   |
 
 DoH uses `https://1.1.1.1/dns-query`, connects directly to `1.1.1.1`, and validates TLS. Cloudflare receives the queried domain and can observe the backend network exit; provider API credentials are not sent to the resolver. Validated public A / AAAA answers are pinned for the connection, and redirected targets are checked again. DoH failures remain failures and do not disable private-network restrictions.
 
@@ -142,17 +142,17 @@ Browser extensions, system proxies, TUN routing, and split routing can produce d
 
 For installer-managed copies, edit **`config/.env`** and **`config/config.local.json`** inside the installation directory. For manually run source / Release copies, use the project root instead, starting from [.env.example](.env.example) and [config.example.json](config.example.json). Stop and restart after changes.
 
-| Variable | Purpose |
-| --- | --- |
-| `PORT` | Production port, default `4173` |
-| `BIND_ADDRESS` | Default `127.0.0.1`; keep loopback binding for personal use |
-| `CONFIG_FILE` | Optional JSON file; relative paths resolve from the service working directory |
-| `DNS_MODE` | `auto`, `system`, or `doh`; defaults to `auto` |
-| `IPAPI_KEY` | Optional ipapi.is key for fuller profile fields |
-| `ABUSEIPDB_KEY` | AbuseIPDB lookup key; this application does not submit reports |
-| `GLOBALPING_TOKEN` | Optional account token; measurements must still be treated as public |
-| `DNS_COLLECTOR_URL` | Standard HTTPS base URL of your collector's management API |
-| `DNS_COLLECTOR_TOKEN` | Collector token read only by the backend |
+| Variable              | Purpose                                                                       |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `PORT`                | Production port, default `4173`                                               |
+| `BIND_ADDRESS`        | Default `127.0.0.1`; keep loopback binding for personal use                   |
+| `CONFIG_FILE`         | Optional JSON file; relative paths resolve from the service working directory |
+| `DNS_MODE`            | `auto`, `system`, or `doh`; defaults to `auto`                                |
+| `IPAPI_KEY`           | Optional ipapi.is key for fuller profile fields                               |
+| `ABUSEIPDB_KEY`       | AbuseIPDB lookup key; this application does not submit reports                |
+| `GLOBALPING_TOKEN`    | Optional account token; measurements must still be treated as public          |
+| `DNS_COLLECTOR_URL`   | Standard HTTPS base URL of your collector's management API                    |
+| `DNS_COLLECTOR_TOKEN` | Collector token read only by the backend                                      |
 
 Keep keys in private local configuration. Do not use `VITE_` variables or put keys in URLs / frontend code. Anonymous IP responses may omit VPN, proxy, and other security fields; missing fields are unknown.
 
@@ -220,16 +220,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [ARCHITECTURE.md](docs/ARCHITECTURE.m
 
 ## Troubleshooting
 
-| Symptom | What to check |
-| --- | --- |
-| Browser works, backend fails | Run the backend connection check; inspect DNS provenance, errors, system routing, and `DNS_MODE` |
-| Fake-IP / non-public answer | `auto` only falls back for the documented Fake-IP condition; ordinary private targets remain blocked |
-| No IPv6 result | IPv6 may be absent, unreachable, or restricted; this alone does not prove a leak |
-| 401 / 403 or unreadable cross-origin response | Distinguish request status, CORS, opaque responses, login challenges, and account permissions |
-| Conflicting IP locations or labels | Provider coverage, update times, and definitions differ; preserve sources and do not combine them into a platform score |
-| Missing status or Ping result | Possible incompatible feed, rate limit, blocked ICMP, or missing system `ping`; the website may still work |
-| Port conflict | Check `status`, stop the conflicting service, or change `PORT` and restart using the new URL |
-| Configuration has no effect | Check installed versus manual configuration paths, JSON syntax, list replacement, and restart |
+| Symptom                                       | What to check                                                                                                           |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Browser works, backend fails                  | Run the backend connection check; inspect DNS provenance, errors, system routing, and `DNS_MODE`                        |
+| Fake-IP / non-public answer                   | `auto` only falls back for the documented Fake-IP condition; ordinary private targets remain blocked                    |
+| No IPv6 result                                | IPv6 may be absent, unreachable, or restricted; this alone does not prove a leak                                        |
+| 401 / 403 or unreadable cross-origin response | Distinguish request status, CORS, opaque responses, login challenges, and account permissions                           |
+| Conflicting IP locations or labels            | Provider coverage, update times, and definitions differ; preserve sources and do not combine them into a platform score |
+| Missing status or Ping result                 | Possible incompatible feed, rate limit, blocked ICMP, or missing system `ping`; the website may still work              |
+| Port conflict                                 | Check `status`, stop the conflicting service, or change `PORT` and restart using the new URL                            |
+| Configuration has no effect                   | Check installed versus manual configuration paths, JSON syntax, list replacement, and restart                           |
 
 ## Privacy, validation, and license
 

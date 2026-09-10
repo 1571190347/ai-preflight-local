@@ -1,6 +1,6 @@
 {
   "name": "ai-preflight-local",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "Local-first network and AI environment diagnostics",
   "homepage": "https://github.com/1571190347/ai-preflight-local#readme",

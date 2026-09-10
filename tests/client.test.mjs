@@ -10,6 +10,8 @@ import {
   browserBasics,
   exitCheck,
   linkCheck,
+  buildQuickReport,
+  buildAiReadableReport,
 } from "../.test-build/client.js";
 test("browser IPv6 validation rejects malformed or incomplete addresses", () => {
   for (const x of ["::1", "2606:4700:4700::1111", "1:2:3:4:5:6:7:8", "8.8.8.8"])
@@ -137,4 +139,91 @@ test("platform region never inherits unrelated Cloudflare or another AI platform
   ];
   assert.equal(platformCountry(rows, "gpt"), null);
   assert.deepEqual(platformCountry(rows, "claude"), { country: "JP", source: "Claude" });
+});
+
+test("quick report surfaces explicit provider risks without presenting them as a platform score", () => {
+  const report = buildQuickReport({
+    currentIp: "8.8.8.8",
+    exits: [{ id: "ipv4", state: "received", ip: "8.8.8.8", country: "US" }],
+    profiles: [
+      {
+        state: "received",
+        source: "ipapi.is",
+        ip: "8.8.8.8",
+        country: "United States",
+        asn: 15169,
+        organization: "Example",
+        type: "hosting",
+        flags: { is_proxy: true, is_vpn: false, is_tor: false },
+      },
+    ],
+    links: [{ platform: "gpt", state: "received", successes: 3 }],
+  });
+  assert.equal(report.level, "risk");
+  assert.equal(report.facts.ip, "8.8.8.8");
+  assert.ok(report.findings.some((x) => x.id.startsWith("flag-is_proxy") && x.level === "risk"));
+  assert.match(report.description, /不是 Claude 或 OpenAI/);
+});
+
+test("quick report distinguishes incomplete risk data from a clean result", () => {
+  const unknown = buildQuickReport({
+    currentIp: "1.1.1.1",
+    profiles: [{ state: "received", source: "ipwho.is", ip: "1.1.1.1", flags: {} }],
+    links: [{ platform: "claude", state: "received", successes: 3 }],
+  });
+  assert.equal(unknown.level, "unknown");
+  assert.ok(unknown.findings.some((x) => x.id === "risk-data-missing"));
+  const clear = buildQuickReport({
+    profiles: [
+      {
+        state: "received",
+        source: "ipapi.is",
+        flags: { is_proxy: false, is_vpn: false, is_tor: false, is_abuser: false },
+      },
+    ],
+    links: [{ platform: "gpt", state: "received", successes: 3 }],
+  });
+  assert.equal(clear.level, "clear");
+  assert.ok(clear.findings.some((x) => x.id === "no-provider-flags"));
+});
+
+test("quick report calls out split routing and failed AI connectivity as attention items", () => {
+  const report = buildQuickReport({
+    exits: [
+      { state: "received", country: "US" },
+      { state: "received", country: "JP" },
+    ],
+    profiles: [
+      {
+        state: "received",
+        source: "ipapi.is",
+        flags: { is_proxy: false, is_vpn: false },
+      },
+    ],
+    links: [{ platform: "claude", state: "unknown", successes: 0 }],
+  });
+  assert.equal(report.level, "attention");
+  assert.ok(report.findings.some((x) => x.id === "split-country"));
+  assert.ok(report.findings.some((x) => x.id === "claude-connection" && x.level === "attention"));
+});
+
+test("AI-readable report is structured, evidence-bound, and masks the public IP", () => {
+  const report = buildQuickReport({
+    currentIp: "8.8.8.8",
+    profiles: [
+      {
+        state: "received",
+        source: "ipapi.is",
+        country: "United States",
+        organization: "Example Network",
+        flags: { is_proxy: true },
+      },
+    ],
+  });
+  const text = buildAiReadableReport(report);
+  assert.match(text, /请 AI 完成的任务/);
+  assert.match(text, /区分事实、推测/);
+  assert.match(text, /\[risk\] 代理被数据源标记/);
+  assert.match(text, /\[已隐藏\]/);
+  assert.doesNotMatch(text, /8\.8\.8\.8/);
 });
